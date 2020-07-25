@@ -5,3 +5,4 @@
 
 IMPLEMENT_PRIMARY_GAME_MODULE( FDefaultGameModuleImpl, Building_Escape, "Building_Escape" );
 
+DEFINE_LOG_CATEGORY(LogBuildng_Escape);

@@ -6,8 +6,12 @@ public class Building_Escape : ModuleRules
 {
 	public Building_Escape(ReadOnlyTargetRules Target) : base(Target)
 	{
-		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-	
+		//PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+
+		PCHUsage = PCHUsageMode.NoSharedPCHs;
+		PrivatePCHHeaderFile = "Building_Escape.h";
+		CppStandard = CppStandardVersion.Cpp17;
+		
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
