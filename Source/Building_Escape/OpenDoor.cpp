@@ -1,9 +1,12 @@
 // Copyrights Salim Pamukcu 2020
-
+#define print(text) if(GEngine) GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::White, text)
 
 #include "OpenDoor.h"
+#include <EngineGlobals.h>
+#include <Runtime/Engine/Classes/Engine/Engine.h>
 #include "GameFramework/Actor.h"
 #include "Building_Escape.h"
+
 
 // Sets default values for this component's properties
 UOpenDoor::UOpenDoor()
@@ -28,6 +31,7 @@ void UOpenDoor::BeginPlay()
 	// Alternative Ways to Debug
 	FString ObjectName = GetOwner()->GetName();
 	UE_LOG(LogBuildng_Escape, Warning, TEXT("Door Name: %s, Door Yawn is %0.2f"),*ObjectName, InitialYaw);	
+	print(FString::Printf(TEXT("Door Name: %s, Initial Yaw: %0.2f, TargetYaw: %0.2f"), *ObjectName, InitialYaw, TargetYaw));
 }
 
 
@@ -36,15 +40,20 @@ void UOpenDoor::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompon
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	
+	// Logging and On Screen Messages
+	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Blue, FString::Printf(TEXT("Initial Yaw: %0.2f, TargetYaw: %0.2f"), InitialYaw, TargetYaw));
 	UE_LOG(LogBuildng_Escape, Warning, TEXT("Door Yaw is %0.2f"), GetOwner()->GetActorRotation().Yaw);
-	//UE_LOG(LogBuildng_Escape, Error, TEXT("Door Rotation is %s"), *GetOwner()->GetActorRotation().ToString());
 	
 	FRotator DoorRotation = GetOwner()->GetActorRotation();
 	CurrentYaw = FMath::FInterpTo(CurrentYaw, TargetYaw, DeltaTime, 2.0f); 
 	DoorRotation.Yaw = CurrentYaw;
 	GetOwner()->SetActorRotation(DoorRotation);
 	
-	//GetOwner()->AddActorWorldRotation({ 0.0f, CurrentYaw, 0.0f });   // Opens door too fast ; NOT CORRECT ???
+	// Screen Message Update
+	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Orange, FString::Printf(TEXT("Current Yaw: %0.2f"), CurrentYaw));
 
+	// TODO: Learn how to use this
+	//GetOwner()->SetActorRelativeRotation(DoorRotation);
+	//GetOwner()->AddActorWorldRotation({ 0.0f, CurrentYaw, 0.0f });   // Opens door too fast ; NOT CORRECT ???
 }
 
