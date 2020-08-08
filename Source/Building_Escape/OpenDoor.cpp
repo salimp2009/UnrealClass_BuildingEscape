@@ -1,4 +1,5 @@
 // Copyrights Salim Pamukcu 2020
+#define printALT(text, ...) if(GEngine) GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::White, FString::Printf(text, __VA_ARGS__))
 #define print(text) if(GEngine) GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::White, text)
 
 #include "OpenDoor.h"
@@ -28,10 +29,12 @@ void UOpenDoor::BeginPlay()
 	CurrentYaw = InitialYaw;
 	TargetYaw += InitialYaw;
 
+
 	// Alternative Ways to Debug
 	FString ObjectName = GetOwner()->GetName();
 	UE_LOG(LogBuildng_Escape, Warning, TEXT("Door Name: %s, Door Yawn is %0.2f"),*ObjectName, InitialYaw);	
-	print(FString::Printf(TEXT("Door Name: %s, Initial Yaw: %0.2f, TargetYaw: %0.2f"), *ObjectName, InitialYaw, TargetYaw));
+	//printALT(TEXT("Door Name : %s, Initial Yaw: %0.2f, TargetYaw: %0.2f"), *ObjectName, InitialYaw, TargetYaw);
+	//print(FString::Printf(TEXT("Door Name: %s, Initial Yaw: %0.2f, TargetYaw: %0.2f"), *ObjectName, InitialYaw, TargetYaw));
 }
 
 
@@ -40,20 +43,26 @@ void UOpenDoor::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompon
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	
+	if (PressurePlate->IsOverlappingActor(ActorThatOpens))
+	{
+		OpenDoor(DeltaTime);
+	}
+
+}
+
+void UOpenDoor::OpenDoor(float DeltaTime)
+{
 	// Logging and On Screen Messages
-	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Blue, FString::Printf(TEXT("Initial Yaw: %0.2f, TargetYaw: %0.2f"), InitialYaw, TargetYaw));
-	UE_LOG(LogBuildng_Escape, Warning, TEXT("Door Yaw is %0.2f"), GetOwner()->GetActorRotation().Yaw);
-	
+	//GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Blue, FString::Printf(TEXT("Initial Yaw: %0.2f, TargetYaw: %0.2f"), InitialYaw, TargetYaw));
+	//UE_LOG(LogBuildng_Escape, Warning, TEXT("Door Yaw is %0.2f"), GetOwner()->GetActorRotation().Yaw);
+
 	FRotator DoorRotation = GetOwner()->GetActorRotation();
-	CurrentYaw = FMath::FInterpTo(CurrentYaw, TargetYaw, DeltaTime, 2.0f); 
+	CurrentYaw = FMath::FInterpTo(CurrentYaw, TargetYaw, DeltaTime, 2.0f);
 	DoorRotation.Yaw = CurrentYaw;
 	GetOwner()->SetActorRotation(DoorRotation);
-	
+
 	// Screen Message Update
 	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Orange, FString::Printf(TEXT("Current Yaw: %0.2f"), CurrentYaw));
 
-	// TODO: Learn how to use this
-	//GetOwner()->SetActorRelativeRotation(DoorRotation);
-	//GetOwner()->AddActorWorldRotation({ 0.0f, CurrentYaw, 0.0f });   // Opens door too fast ; NOT CORRECT ???
 }
 
