@@ -3,8 +3,10 @@
 #define print(text) if(GEngine) GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::White, text)
 
 #include "OpenDoor.h"
-#include <EngineGlobals.h>
-#include <Runtime/Engine/Classes/Engine/Engine.h>
+#include "EngineGlobals.h"
+#include "Runtime/Engine/Classes/Engine/Engine.h"
+#include "Engine/World.h"
+#include "GameFramework/PlayerController.h"
 #include "GameFramework/Actor.h"
 #include "Building_Escape.h"
 
@@ -25,27 +27,31 @@ void UOpenDoor::BeginPlay()
 {
 	Super::BeginPlay();
 
-	InitialYaw= GetOwner()->GetActorRotation().Yaw;
+	InitialYaw = GetOwner()->GetActorRotation().Yaw;
 	CurrentYaw = InitialYaw;
 	TargetYaw += InitialYaw;
 
+	if (!PressurePlate)
+	{
+		UE_LOG(LogBuildng_Escape, Error, TEXT("PressurePlate Pointer Not Initialized: %s"), *GetOwner()->GetName());
+	}
 
-	// Alternative Ways to Debug
-	FString ObjectName = GetOwner()->GetName();
-	UE_LOG(LogBuildng_Escape, Warning, TEXT("Door Name: %s, Door Yawn is %0.2f"),*ObjectName, InitialYaw);	
-	//printALT(TEXT("Door Name : %s, Initial Yaw: %0.2f, TargetYaw: %0.2f"), *ObjectName, InitialYaw, TargetYaw);
-	//print(FString::Printf(TEXT("Door Name: %s, Initial Yaw: %0.2f, TargetYaw: %0.2f"), *ObjectName, InitialYaw, TargetYaw));
+	ActorThatOpens=GetWorld()->GetFirstPlayerController()->GetPawn();
 }
-
 
 // Called every frame
 void UOpenDoor::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	
-	if (PressurePlate->IsOverlappingActor(ActorThatOpens))
+	if (PressurePlate && PressurePlate->IsOverlappingActor(ActorThatOpens))
 	{
 		OpenDoor(DeltaTime);
+	}
+
+	else
+	{
+		CloseDoor(DeltaTime);
 	}
 
 }
@@ -53,7 +59,6 @@ void UOpenDoor::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompon
 void UOpenDoor::OpenDoor(float DeltaTime)
 {
 	// Logging and On Screen Messages
-	//GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Blue, FString::Printf(TEXT("Initial Yaw: %0.2f, TargetYaw: %0.2f"), InitialYaw, TargetYaw));
 	//UE_LOG(LogBuildng_Escape, Warning, TEXT("Door Yaw is %0.2f"), GetOwner()->GetActorRotation().Yaw);
 
 	FRotator DoorRotation = GetOwner()->GetActorRotation();
@@ -61,8 +66,17 @@ void UOpenDoor::OpenDoor(float DeltaTime)
 	DoorRotation.Yaw = CurrentYaw;
 	GetOwner()->SetActorRotation(DoorRotation);
 
-	// Screen Message Update
+	// Screen Message Update for Door Yaw & Actor Opens the Door
 	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Orange, FString::Printf(TEXT("Current Yaw: %0.2f"), CurrentYaw));
+	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Green, FString::Printf(TEXT("Actor Opens Door: %s"), *ActorThatOpens->GetName()));
+}
+
+void UOpenDoor::CloseDoor(float DeltaTime)
+{
+	FRotator DoorRotation = GetOwner()->GetActorRotation();
+	CurrentYaw = FMath::FInterpTo(CurrentYaw, InitialYaw, DeltaTime, 2.0f);
+	DoorRotation.Yaw = CurrentYaw;
+	GetOwner()->SetActorRotation(DoorRotation);
 
 }
 
