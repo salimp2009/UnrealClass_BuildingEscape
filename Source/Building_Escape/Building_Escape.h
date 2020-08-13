@@ -6,3 +6,4 @@
 #include "CoreMinimal.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(LogBuildng_Escape, Log, All);
+

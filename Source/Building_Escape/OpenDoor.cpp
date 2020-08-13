@@ -1,8 +1,6 @@
 // Copyrights Salim Pamukcu 2020
-#define printALT(text, ...) if(GEngine) GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, FString::Printf(text, __VA_ARGS__))
-#define print(text) if(GEngine) GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::White, text)
-#define printT(text, ...) if(GEngine) GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Orange, FString::Printf(text, __VA_ARGS__))
-
+#define print(Color, text, ...) if(GEngine) GEngine->AddOnScreenDebugMessage(-1, 2.0f, Color, FString::Printf(text, __VA_ARGS__))
+#define printTC(Color, text, ...) if(GEngine) GEngine->AddOnScreenDebugMessage(-1, DeltaTime, Color, FString::Printf(text, __VA_ARGS__))
 
 #include "OpenDoor.h"
 #include "EngineGlobals.h"
@@ -39,6 +37,7 @@ void UOpenDoor::BeginPlay()
 	}
 	
 	ActorThatOpens=GetWorld()->GetFirstPlayerController()->GetPawn();
+
 }
 
 // Called every frame
@@ -71,9 +70,12 @@ void UOpenDoor::OpenDoor(float DeltaTime)
 	GetOwner()->SetActorRotation(DoorRotation);
 
 	// Screen Message Update for Door Yaw & Actor Opens the Door
-	if(GEngine) GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Orange, FString::Printf(TEXT("Current Yaw: %0.2f"), CurrentYaw));
-	if (GEngine && ActorThatOpens)
-		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Green, FString::Printf(TEXT("Actor Opens Door: %s"), *ActorThatOpens->GetName()));
+	//if(GEngine) GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Orange, FString::Printf(TEXT("Current Yaw: %0.2f"), CurrentYaw));
+	printTC(FColor::Orange, TEXT("Current Yaw: %0.2f"), CurrentYaw);
+
+	if (ActorThatOpens)
+		printTC(FColor::Green, TEXT("Actor Opens Door: %s"), *ActorThatOpens->GetName());
+		//GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Green, FString::Printf(TEXT("Actor Opens Door: %s"), *ActorThatOpens->GetName()));
 }
 
 void UOpenDoor::CloseDoor(float DeltaTime)
