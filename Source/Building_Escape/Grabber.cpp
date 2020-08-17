@@ -49,14 +49,26 @@ void UGrabber::SetupInputComponent()
 	}
 }
 
+
 void UGrabber::Grab()
 {
 	UE_LOG(LogBuildng_Escape, Warning, TEXT("Grabber pressed!"));
+	
+	// TODO: raycast only when key is pressed & check if we reach any actor with Physics Handle collision channel set
+	auto HitResult=GetFirstPhysicsBodyInReach();
+	
+	// TODO: Attach Physics Handle;if we hit something then attach Physics Handle
+	//PhysicsHandle->GrabComponentAtLocation(HitResult.GetComponent(), HitResult.BoneName, HitResult.Location );
+	//auto NewLocation = PhysicsHandle->CurrentTransform;
+	//PhysicsHandle->SetTargetLocation(NewLocation.GetLocation());
 }
 
 void UGrabber::Release()
 {
 	UE_LOG(LogBuildng_Escape, Warning, TEXT("Grabber released!"));
+
+	//TODO: Remove Physics Handle
+	PhysicsHandle->ReleaseComponent();
 }
 
 
@@ -65,31 +77,40 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	// Get Players Viewpoint
+	// If the physics handle is attached
+	// Move the the object we are holding
+
+	// Draw a Debugline; NOT NEEDED FOR Actual Game Play
+	//DrawDebugLine(GetWorld(), PlayerViewPointLocation, LineTraceEnd, FColor::Green, false, -1.0f, 0, 5.0f);
+}
+
+FHitResult UGrabber::GetFirstPhysicsBodyInReach() const
+{
+	// Get Players Viewpoint to record the Location, Rotation
 	FVector PlayerViewPointLocation;
 	FRotator  PlayerViewPointRotation;
 	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(OUT PlayerViewPointLocation, OUT PlayerViewPointRotation);
 
-	// Draw a Debugline
 	FVector LineTraceEnd = PlayerViewPointLocation + PlayerViewPointRotation.Vector() * Reach;
-	DrawDebugLine(GetWorld(), PlayerViewPointLocation, LineTraceEnd, FColor::Green, false, -1.0f, 0, 5.0f);
 
 	// Ray cast out to a certain distance by LineTraceForObject ; alternative is LineTraceByChannel
 	// can be done via Blueprint as well
 	FHitResult Hit;
 	FCollisionQueryParams TraceParams(FName(TEXT("")), false, GetOwner());
 	GetWorld()->LineTraceSingleByObjectType(
-			OUT Hit, 
-			PlayerViewPointLocation, 
-			LineTraceEnd, 
-			FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody), 
-			TraceParams
+		OUT Hit,
+		PlayerViewPointLocation,
+		LineTraceEnd,
+		FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody),
+		TraceParams
 	);
 
-	if(Hit.GetActor()) 
+	if (Hit.GetActor())
 	{
 		UE_LOG(LogBuildng_Escape, Warning, TEXT("Ray Tracing Hit Object Name: %s"), *Hit.GetActor()->GetName());
 	}
+
+	return Hit;
 }
 
 
