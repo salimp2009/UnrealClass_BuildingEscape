@@ -1,14 +1,15 @@
 // Copyrights Salim Pamukcu 2020
-#define print(Color, text, ...) if(GEngine) GEngine->AddOnScreenDebugMessage(-1, 2.0f, Color, FString::Printf(text, __VA_ARGS__))
-#define printTC(Color, text, ...) if(GEngine) GEngine->AddOnScreenDebugMessage(-1, DeltaTime, Color, FString::Printf(text, __VA_ARGS__))
+//#define print(Color, text, ...) if(GEngine) GEngine->AddOnScreenDebugMessage(-1, 2.0f, Color, FString::Printf(text, __VA_ARGS__))
+//#define printTC(Color, text, ...) if(GEngine) GEngine->AddOnScreenDebugMessage(-1, DeltaTime, Color, FString::Printf(text, __VA_ARGS__))
+
+
+//#include "EngineGlobals.h"
+//#include "Runtime/Engine/Classes/Engine/Engine.h"
 
 #include "OpenDoor.h"
-#include "EngineGlobals.h"
-#include "Runtime/Engine/Classes/Engine/Engine.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/Actor.h"
-#include "Building_Escape.h"
 
 
 // Sets default values for this component's properties
@@ -18,7 +19,6 @@ UOpenDoor::UOpenDoor()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 }
-
 
 // Called when the game starts
 void UOpenDoor::BeginPlay()
@@ -35,7 +35,6 @@ void UOpenDoor::BeginPlay()
 	}
 
 	ActorThatOpens=GetWorld()->GetFirstPlayerController()->GetPawn();
-
 }
 
 // Called every frame

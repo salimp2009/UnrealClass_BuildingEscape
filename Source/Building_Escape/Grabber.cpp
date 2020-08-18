@@ -1,9 +1,9 @@
 // Copyrights Salim Pamukcu 2020
 
+#include "Grabber.h"
 #include "DrawDebugHelpers.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
-#include "Grabber.h"
 
 #define OUT
 
@@ -54,20 +54,29 @@ void UGrabber::Grab()
 {
 	UE_LOG(LogBuildng_Escape, Warning, TEXT("Grabber pressed!"));
 	
-	// TODO: raycast only when key is pressed & check if we reach any actor with Physics Handle collision channel set
-	auto HitResult=GetFirstPhysicsBodyInReach();
+	// TODO: Refactor to have in a seperate function
+	FVector PlayerViewPointLocation;
+	FRotator  PlayerViewPointRotation;
+	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(OUT PlayerViewPointLocation, OUT PlayerViewPointRotation);
+	FVector LineTraceEnd = PlayerViewPointLocation + PlayerViewPointRotation.Vector() * Reach;
 	
-	// TODO: Attach Physics Handle;if we hit something then attach Physics Handle
-	//PhysicsHandle->GrabComponentAtLocation(HitResult.GetComponent(), HitResult.BoneName, HitResult.Location );
-	//auto NewLocation = PhysicsHandle->CurrentTransform;
-	//PhysicsHandle->SetTargetLocation(NewLocation.GetLocation());
+	
+	//Raycast only when key is pressed & check if we reach any actor with Physics Handle collision channel set
+	FHitResult HitResult=GetFirstPhysicsBodyInReach();
+	
+	// Attach Physics Handle;if we hit something then attach Physics Handle
+	if (HitResult.GetActor())
+	{
+		PhysicsHandle->GrabComponentAtLocation(HitResult.GetComponent(), NAME_None, LineTraceEnd);
+		// PhysicsHandle->GrabComponentAtLocation(HitResult.GetComponent(), HitResult.BoneName, HitResult.Location );
+	}
 }
 
 void UGrabber::Release()
 {
 	UE_LOG(LogBuildng_Escape, Warning, TEXT("Grabber released!"));
-
-	//TODO: Remove Physics Handle
+	
+	//Remove Physics Handle
 	PhysicsHandle->ReleaseComponent();
 }
 
@@ -79,6 +88,14 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 
 	// If the physics handle is attached
 	// Move the the object we are holding
+	if (PhysicsHandle->GrabbedComponent)
+	{
+		FVector PlayerViewPointLocation;
+		FRotator  PlayerViewPointRotation;
+		GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(OUT PlayerViewPointLocation, OUT PlayerViewPointRotation);
+		FVector LineTraceEnd = PlayerViewPointLocation + PlayerViewPointRotation.Vector() * Reach;
+		PhysicsHandle->SetTargetLocation(LineTraceEnd);
+	}
 
 	// Draw a Debugline; NOT NEEDED FOR Actual Game Play
 	//DrawDebugLine(GetWorld(), PlayerViewPointLocation, LineTraceEnd, FColor::Green, false, -1.0f, 0, 5.0f);
@@ -90,9 +107,8 @@ FHitResult UGrabber::GetFirstPhysicsBodyInReach() const
 	FVector PlayerViewPointLocation;
 	FRotator  PlayerViewPointRotation;
 	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(OUT PlayerViewPointLocation, OUT PlayerViewPointRotation);
-
 	FVector LineTraceEnd = PlayerViewPointLocation + PlayerViewPointRotation.Vector() * Reach;
-
+	
 	// Ray cast out to a certain distance by LineTraceForObject ; alternative is LineTraceByChannel
 	// can be done via Blueprint as well
 	FHitResult Hit;
