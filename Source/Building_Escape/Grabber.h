@@ -36,4 +36,10 @@ private:
 	void SetupInputComponent();
 
 	FHitResult GetFirstPhysicsBodyInReach() const;
+
+	// Return LineTraceEnd
+	FVector GetPlayersReach() const;
+
+	// Get Players Location in World
+	FVector GetPlayersWorldPos() const;
 };
