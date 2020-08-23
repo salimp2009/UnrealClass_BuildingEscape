@@ -29,7 +29,7 @@ void UGrabber::FindPhysicsHandle()
 {
 	// Check for Physics Component
 	PhysicsHandle = GetOwner()->FindComponentByClass<UPhysicsHandleComponent>();
-	if (PhysicsHandle==nullptr)
+	if (!PhysicsHandle)
 	{
 		UE_LOG(LogBuildng_Escape, Error, TEXT("No Physics Handle Component Found on %s"), *GetOwner()->GetName());
 	}
@@ -48,13 +48,14 @@ void UGrabber::SetupInputComponent()
 
 void UGrabber::Grab()
 {
-
 	//Raycast only when key is pressed & check if we reach any actor with Physics Handle collision channel set
 	FHitResult HitResult=GetFirstPhysicsBodyInReach();
 	
 	// Attach Physics Handle;if we hit something then attach Physics Handle
-	if (HitResult.GetActor())
+	AActor* ActorHit = HitResult.GetActor();
+	if (ActorHit)
 	{
+		if (!PhysicsHandle) return;
 		PhysicsHandle->GrabComponentAtLocation(HitResult.GetComponent(), NAME_None, GetPlayersReach());
 		// PhysicsHandle->GrabComponentAtLocation(HitResult.GetComponent(), HitResult.BoneName, HitResult.Location );
 	}
@@ -64,6 +65,7 @@ void UGrabber::Grab()
 
 void UGrabber::Release()
 {
+	if (!PhysicsHandle) return;
 	//Remove Physics Handle
 	PhysicsHandle->ReleaseComponent();
 }
@@ -75,9 +77,10 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// If the physics handle is attached
-	// Move the the object we are holding
+	if (!PhysicsHandle) return;
 	if (PhysicsHandle->GrabbedComponent)
 	{
+		// Move the the object we are holding
 		PhysicsHandle->SetTargetLocation(GetPlayersReach());
 	}
 

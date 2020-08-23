@@ -9,9 +9,10 @@
 #define OUT
 
 #include "OpenDoor.h"
+#include "Components/AudioComponent.h"
+#include "Components/PrimitiveComponent.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
-#include "Components/PrimitiveComponent.h"
 #include "GameFramework/Actor.h"
 
 
@@ -32,13 +33,26 @@ void UOpenDoor::BeginPlay()
 	CurrentYaw = InitialYaw;
 	OpenAngle += InitialYaw;
 
+	FindPressurePlate();
+	FindAudioComponent();
+}
+
+void UOpenDoor::FindAudioComponent()
+{
+	AudioComponent = GetOwner()->FindComponentByClass<UAudioComponent>();
+
+	if (!AudioComponent)
+	{
+		UE_LOG(LogBuildng_Escape, Error, TEXT("Audio Component Not Found: %s"), *GetOwner()->GetName());
+	}
+}
+
+void UOpenDoor::FindPressurePlate()
+{
 	if (!PressurePlate)
 	{
 		UE_LOG(LogBuildng_Escape, Error, TEXT("PressurePlate Pointer Not Initialized: %s"), *GetOwner()->GetName());
 	}
-
-	ActorThatOpens=GetWorld()->GetFirstPlayerController()->GetPawn();
-	
 }
 
 // Called every frame
@@ -67,6 +81,14 @@ void UOpenDoor::OpenDoor(float DeltaTime)
 	DoorRotation.Yaw = CurrentYaw;
 	GetOwner()->SetActorRotation(DoorRotation);
 
+	CloseDoorSound = false;
+	if (!AudioComponent) { return; }
+	if (!OpenDoorSound)
+	{
+		AudioComponent->Play();
+		OpenDoorSound = true;
+	}
+
 	//if (ActorThatOpens)
 		//printTC(FColor::Green, TEXT("Actor Opens Door: %s"), *ActorThatOpens->GetName());
 		//if (GEngine) GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Green, FString::Printf(TEXT("Actor Opens Door: %s"), *ActorThatOpens->GetName()));
@@ -78,6 +100,14 @@ void UOpenDoor::CloseDoor(float DeltaTime)
 	CurrentYaw = FMath::FInterpTo(CurrentYaw, InitialYaw, DeltaTime, DoorClosedSpeed);
 	DoorRotation.Yaw = CurrentYaw;
 	GetOwner()->SetActorRotation(DoorRotation);
+	
+	if (!AudioComponent) { return;}
+	OpenDoorSound = false;
+	if (!CloseDoorSound)
+	{
+		AudioComponent->Play();
+		CloseDoorSound = true;
+	}
 }
 
 float UOpenDoor::TotalMassOfActors() const
@@ -85,14 +115,18 @@ float UOpenDoor::TotalMassOfActors() const
 	float TotalMass = 0.0f;
 	
 	TArray<AActor*> OverlappingActors;
+	
+	if (!PressurePlate) { return TotalMass; }
 	PressurePlate->GetOverlappingActors(OUT OverlappingActors);
 
 	for (AActor* Actor : OverlappingActors)
 	{
 		TotalMass += Actor->FindComponentByClass<UPrimitiveComponent>()->GetMass();
-		UE_LOG(LogBuildng_Escape, Warning, TEXT("Actor in Pressure Plate: %s, Total Mass: %0.2f"), *Actor->GetName(), TotalMass);
+		//UE_LOG(LogBuildng_Escape, Warning, TEXT("Actor in Pressure Plate: %s, Total Mass: %0.2f"), *Actor->GetName(), TotalMass);
 	}
 		
 	return TotalMass;
 }
+
+
 

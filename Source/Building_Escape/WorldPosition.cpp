@@ -21,13 +21,6 @@ void UWorldPosition::BeginPlay()
 	FString ObjectName = GetOwner()->GetName();
 	FString ObjectPosition = GetOwner()->GetActorLocation().ToString();
 	UE_LOG(LogBuildng_Escape, Warning, TEXT("Object Name: %s Coordinates; %s"), *ObjectName, *ObjectPosition);
-
-	// Using c++17 structured binding to access x,y,z via reference ; No Copies
-	//FVector Position = GetOwner()->GetActorLocation();
-	//auto& [x, y, z] = Position;
-
-	//UE_LOG(LogTemp, Warning, TEXT("Actor Component Name: %s"), *GetNameSafe(this));
-	//UE_LOG(LogBuildng_Escape, Error, TEXT("C++17 VERSION: Object Name: %s Coordinates; %0.2f, %0.2f, %0.2f"), *ObjectName, x, y, z);
 }
 
 // Called every frame
